@@ -6,6 +6,7 @@ import arenaModel from "../models/arena";
 import { newArena, findInput, arenaEditInfo } from "../schema/ArenaSchema";
 import Jwt from "../utils/jwt";
 import JwtAdmin from "../utils/jwtAdmin";
+import JwtArena from "../utils/jwtArena";
 
 export const addArena = async (
   { name, portrait, description, minPoints }: newArena,
@@ -91,7 +92,6 @@ export const modifyArena = async (
 ) => {
   try {
     let token = ctx.req.headers.token;
-    console.log(ctx.req.ipInfo);
 
     let localToken = await JwtAdmin.validateToken(token);
 
@@ -117,6 +117,36 @@ export const modifyArena = async (
 
     return Promise.resolve(`${newArena._id} succesfully updated`);
   } catch (error) {
+    throw new ApolloError(error);
+  }
+};
+
+export const getPoints = async (ctx: any) => {
+  try {
+    let token = ctx.req.headers.token;
+    let localToken = await Jwt.validateToken(
+      token,
+      ctx.req.body.variables.publicKey
+    );
+    let tokenData: any = await Jwt.decrypt_data(localToken)();
+    let result = await arenaModel.find({}).lean();
+
+    let newResult = result.map(i => ({ id: i._id, minPoints: i.minPoints }));
+
+    let tokenArena = new JwtArena({
+      userId: tokenData.userId,
+      arenas: JSON.stringify(newResult)
+    });
+
+    await tokenArena.create_token("1d");
+
+    return Promise.resolve({
+      msg: tokenArena.token,
+      code: "200"
+    });
+  } catch (error) {
+    console.log(error);
+
     throw new ApolloError(error);
   }
 };

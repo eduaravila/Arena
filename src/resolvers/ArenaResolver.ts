@@ -20,7 +20,8 @@ import {
   addArena,
   deleteArena,
   getArenas,
-  modifyArena
+  modifyArena,
+  getPoints
 } from "../controllers/arena";
 import mongoose from "mongoose";
 
@@ -30,6 +31,11 @@ export class ArenaResolver {
   async Arenas(@Arg("findInput", () => findInput) findInput: findInput) {
     let msg = await getArenas(findInput);
     return [...msg];
+  }
+
+  @Query(returns => SuccessResponse)
+  async ArenaPoins(@Ctx() ctx: any) {
+    return await getPoints(ctx);
   }
 
   @Mutation(returns => SuccessResponse, {
