@@ -124,6 +124,7 @@ export const modifyArena = async (
 export const getPoints = async (ctx: any) => {
   try {
     let token = ctx.req.headers.token;
+
     let localToken = await Jwt.validateToken(
       token,
       ctx.req.body.variables.publicKey
